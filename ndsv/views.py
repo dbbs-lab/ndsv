@@ -24,7 +24,10 @@ class RedshiftQuasarGalaxyBeamRecepticle(ProtectedResourceView):
             meta = json.loads(request.POST['meta'])
         except:
             return HttpResponseBadRequest()
-        beam = ndsv.artifacts.Beam.receive(request.FILES["archive"], meta)
+        meta["access_list"] = meta.get("access_list", [])
+        if request.user.username not in meta["access_list"]:
+            meta["access_list"].append(request.user.username)
+        beam = ndsv.artifacts.Beam.receive(request.user, request.FILES["archive"], meta)
         return HttpResponse(json.dumps({"id": beam.id}))
 
 class BeltramiPseudosphereEmitter(View):

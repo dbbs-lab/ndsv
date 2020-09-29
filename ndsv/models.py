@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
+from django.conf import settings
 
 # Create your models here.
 
@@ -13,6 +14,7 @@ class EtchingPlate(models.Model):
     access_list = models.JSONField(default=list)
     transmitted_on = models.DateTimeField(auto_now=True)
     transmitted_by = models.CharField(max_length=100, default="Unknown")
+    etched_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def has_access(self, user):
         return self.public_access or user.name in self.access_list

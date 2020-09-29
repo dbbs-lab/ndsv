@@ -2,6 +2,7 @@ from django.conf import settings
 import pathlib, io, uuid, tarfile, os, shutil
 from django.db.utils import IntegrityError
 from .models import EtchingPlate
+import copy, json
 
 class PayloadError(Exception):
     pass
@@ -38,19 +39,19 @@ class Beam:
         return Artifact(self, id)
 
     def get_artifacts(self):
-        return []
+        return [Artifact(self, int(id)) for id in os.listdir(self.path) if id.isdigit()]
 
     def read_config(self):
         pass
 
-    def etch(self, archive, meta):
+    def etch(self, user, archive, meta):
         self.tmp_path = tmp = pathlib.Path("/tmp/ndsv-" + self.tmp_id)
         with tarfile.open(fileobj=archive.open(mode="rb"), mode="r") as arc:
             if not arc.next().isdir():
                 raise PayloadError("The toplevel tarfile should be a directory.")
             arc.extractall(str(tmp))
         payload_root = self.validate_payload()
-        return self.etch_payload(payload_root, meta)
+        return self.etch_payload(user, payload_root, meta)
 
     def validate_payload(self):
         toplevel = os.listdir(self.tmp_path)
@@ -59,7 +60,7 @@ class Beam:
         payload_root = self.tmp_path / toplevel[0]
         return payload_root
 
-    def etch_payload(self, payload, meta):
+    def etch_payload(self, user, payload, meta):
         id = self.tmp_id
         reserved = {'id', 'beam'}
         fields = set(field.name for field in EtchingPlate._meta.get_fields())
@@ -70,21 +71,40 @@ class Beam:
             raise PayloadError(f"Invalid meta keys {invalid} supplied. Valid meta keys: {valid}")
         while True:
             try:
-                etch = EtchingPlate.objects.create(beam_id=id, **meta)
+                etch = EtchingPlate.objects.create(etched_by=user, beam_id=id, **meta)
                 break
             except IntegrityError:
                 id = str(uuid.uuid4())
         self.etched(id)
         shutil.move(payload, self.path)
+        # Make sure the uploading user has access to its own artifacts
+        for artifact in self.get_artifacts():
+            access = artifact.json.get("access_list", [])
+            if user.username not in access:
+                print(f"Adding uploading user '{user.username}' to access list")
+                access.append(user.username)
+                artifact.json({"access_list": access})
         return etch
 
     @classmethod
-    def receive(cls, archive, meta):
+    def receive(cls, user, archive, meta):
         storage = get_static_root()
         tmp_id = str(uuid.uuid4())
         beam = cls(tmp_id, storage, incoming=True)
-        beam.etch(archive, meta)
+        beam.etch(user, archive, meta)
         return beam
+
+
+class ArtifactJson(dict):
+    def __init__(self, path, initial):
+        self.path = path
+        self.update(copy.deepcopy(initial))
+
+    def __call__(self, update):
+        self.update(copy.deepcopy(update))
+        with open(self.path, "w") as f:
+            json.dump(self, f)
+
 
 class Artifact:
     def __init__(self, beam, id):
@@ -92,14 +112,17 @@ class Artifact:
         self.beam = beam
         self.root = beam.path
         self.path = beam.path / str(id)
-        self.read_config()
+        self.read_json()
 
-    def read_config(self):
-        with open(self.path / "artifact.json", "r") as f:
-            self.config = json.load(f)
+    def read_json(self):
+        json_path = self.path / "artifact.json"
+        with open(json_path, "r") as f:
+            self.json = ArtifactJson(json_path, json.load(f))
 
     def has_access(self, user):
-        return self.config["public_access"] or user.name in self.config["access_list"]
+        return self.json["public_access"] or user.name in self.json["access_list"]
+
+
 
 def get_static_root():
     path = pathlib.Path(settings.NDSV_STORAGE_VAULT)
