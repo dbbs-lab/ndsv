@@ -37,12 +37,12 @@ class BeltramiPseudosphereEmitter(View):
     def get(self, request, beam_id, artifact_id, file, *args, **kwargs):
         plate = ndsv.models.get_etching_plate(beam_id)
         print("PLATE", plate)
-        if not plate.has_access(request.user):
-            print(f"Denying read permission for beam {plate.beam_id}")
+        if not plate or not plate.has_access(request.user):
+            print(f"Plate access denied read permission to beam")
             raise PermissionDenied()
         beam = plate.get_beam()
         artifact = beam.get_artifact(artifact_id)
-        if not artifact.has_read_access(request.user):
+        if not artifact.has_access(request.user):
             print("User:", request.user, request.user.is_authenticated)
             print(f"Denying artifact read permission for artifact {artifact.id} of beam {artifact.beam.id}")
             raise PermissionDenied()

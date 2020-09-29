@@ -22,7 +22,9 @@ class RestrictAccess:
 
 
 class Beam:
-    def __init__(self, id, root, incoming=False):
+    def __init__(self, id, root=None, incoming=False):
+        if root is None:
+            root = get_static_root()
         self.root = pathlib.Path(root)
         self.incoming = incoming
         if incoming:
@@ -88,9 +90,8 @@ class Beam:
 
     @classmethod
     def receive(cls, user, archive, meta):
-        storage = get_static_root()
         tmp_id = str(uuid.uuid4())
-        beam = cls(tmp_id, storage, incoming=True)
+        beam = cls(tmp_id, incoming=True)
         beam.etch(user, archive, meta)
         return beam
 
@@ -120,7 +121,12 @@ class Artifact:
             self.json = ArtifactJson(json_path, json.load(f))
 
     def has_access(self, user):
-        return self.json["public_access"] or user.name in self.json["access_list"]
+        print(self.json)
+        return self.json["public_access"] or user.username in self.json["access_list"]
+
+    def as_response(self, file):
+        from django.http import FileResponse
+        return FileResponse(open(self.path / file, 'rb'))
 
 
 
