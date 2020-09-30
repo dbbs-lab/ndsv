@@ -121,7 +121,6 @@ class Artifact:
             self.json = ArtifactJson(json_path, json.load(f))
 
     def has_access(self, user):
-        print(self.json)
         return self.json["public_access"] or user.username in self.json["access_list"]
 
     def as_response(self, file):
