@@ -1,0 +1,114 @@
+<html>
+    <head>
+        <style>
+            body {
+                padding: 8px 8px;
+                margin: 0;
+                overflow: hidden;
+                background-color: black;
+                height: 100vh;
+                color: white;
+                font: 1.3rem Inconsolata, monospace;
+                text-shadow: 0 0 5px #C8C8C8;
+            }
+            #in {
+                background-color:rgba(0, 0, 0, 0);
+                color:white;
+                font: 1.3rem Inconsolata, monospace;
+                text-shadow: 0 0 5px #C8C8C8;
+                border: none;
+                outline:none;
+                height: 28px;
+                caret-color: white;
+                position: relative;
+                left: -2px;
+            }
+            .history-item {
+                line-height: 28px;
+            }
+        </style>
+    <body style="">
+        <script>
+            let inputControl = undefined;
+            let historyControl = undefined;
+            let history = [""];
+            let game = {state: "initial", history, historyPtr: 0};
+
+            function resetInput(el) {
+                el.value = "";
+            }
+
+            function historyUp() {
+                if (game.historyPtr < history.length - 1) {
+                    inputControl.value = history[++game.historyPtr];
+                }
+                caretEnd();
+            }
+
+            function historyDown() {
+                if (game.historyPtr > 0) {
+                    inputControl.value = history[--game.historyPtr];
+                }
+                caretEnd();
+            }
+
+            function caretEnd() {
+                let caretPos = inputControl.value.length;
+                inputControl.setSelectionRange(caretPos, caretPos);
+            }
+
+            function message(el) {
+                k = event.key;
+                if(k == 'Enter') {
+                    sendMessage(el.value);
+                    resetInput(el);
+                } else if (k == 'ArrowUp') {
+                    historyUp();
+                } else if (k == 'ArrowDown') {
+                    historyDown();
+                } else {
+                    game.historyPtr = 0;
+                    history[0] = el.value;
+                }
+            }
+
+            function sendMessage(msg) {
+                addToHistory(msg);
+                if (game.historyPtr != 0) {
+                    game.historyPtr = 0;
+                    history.splice(1, 0, msg);
+                } else {
+                    history.splice(0, 0, "");
+                }
+            }
+
+            function addToHistory(msg) {
+                let el = document.createElement("div");
+                el.className += "history-item";
+                el.innerHTML = "$&gt; " + escapeHtml(msg) + "<br>";
+                historyControl.appendChild(el);
+            }
+
+            function escapeHtml(unsafe) {
+                return unsafe
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
+             }
+        </script>
+        <p>
+            You're standing in front of a large vault with countless ancient artifacts inside.
+        </p>
+        <div id="history">
+
+        </div>
+        $&gt; <input id="in" type="text" onblur="this.focus()" onkeyup="message(this)"></input>
+        <script>
+            inputControl = document.getElementById("in");
+            historyControl = document.getElementById("history");
+            inputControl.focus();
+        </script>
+    </body>
+</html>
