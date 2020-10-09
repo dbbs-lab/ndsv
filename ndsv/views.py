@@ -7,6 +7,44 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import ndsv.models, ndsv.artifacts, json
 
+def zork(request):
+    html = """<html>
+        <style>
+            body {
+                background-color: black;
+                height: 100vh;
+                color: white;
+                font: 1.3rem Inconsolata, monospace;
+                text-shadow: 0 0 5px #C8C8C8;
+            }
+            input[type=text] {
+                background-color:rgba(0, 0, 0, 0);
+                color:white;
+                font: 1.3rem Inconsolata, monospace;
+                text-shadow: 0 0 5px #C8C8C8;
+                border: none;
+                outline:none;
+                height:30px;
+                caret-color: white;
+            }
+        </style>
+        <body style="">
+            <script>
+                function my_func(el) {
+                    console.log("ola");
+                }
+            </script>
+            <p>
+                You're standing in front of a large vault with countless ancient artifacts inside.
+            </p>
+            $&gt; <input id="in" type="text" onblur="this.focus()" onkeydown="event.key == 'Enter' ? this.value = '' : ''"></input>
+            <script>
+                document.getElementById("in").focus()
+            </script>
+        </body>
+    </html>"""
+    return HttpResponse(html)
+
 class RedshiftQuasarGalaxyBeamRecepticle(ProtectedResourceView):
     """
         Beam upload endpoint
