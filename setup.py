@@ -30,6 +30,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
     ],
-    install_requires=["portalocker"],
+    install_requires=["portalocker", "django", "django-oauth-toolkit", "django-cors-middleware"],
     extras_require={"dev": ["sphinx", "sphinx_rtd_theme>=0.4.3", "pre-commit", "black"],},
 )
