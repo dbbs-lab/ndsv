@@ -11,6 +11,9 @@ def zork(request):
     html = """<html>
         <style>
             body {
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
                 background-color: black;
                 height: 100vh;
                 color: white;
