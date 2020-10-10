@@ -17,7 +17,7 @@ class EtchingPlate(models.Model):
     etched_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def has_access(self, user):
-        return self.public_access or user.username in self.access_list
+        return user.is_staff or self.public_access or user.username in self.access_list
 
     def get_beam(self):
         from .artifacts import Beam

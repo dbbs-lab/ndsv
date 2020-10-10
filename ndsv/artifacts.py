@@ -116,7 +116,7 @@ class Artifact:
             self.json = ArtifactJson(json_path, json.load(f))
 
     def has_access(self, user):
-        return self.json["public_access"] or user.username in self.json["access_list"]
+        return user.is_staff or self.json["public_access"] or user.username in self.json["access_list"]
 
     def as_response(self, file):
         from django.http import FileResponse
