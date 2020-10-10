@@ -69,4 +69,4 @@ class QuantumSuperfluidityThermostat(View):
         return JsonResponse(_json)
 
 def parse_scheme(artifact):
-    return {"id": artifact.id, "scheme": artifact.json.get("scheme", "infiltrator")}
+    return {"id": artifact.id, "scheme": artifact.get_scheme()}
