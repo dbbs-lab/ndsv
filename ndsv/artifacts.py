@@ -129,6 +129,9 @@ class Artifact:
     def is_file(self, file):
         return path_is_parent(self.path, file) and os.path.exists(file)
 
+    def get_scheme(self):
+        return self.json.get("scheme", "infiltrator")
+
 def path_is_parent(parent_path, child_path):
     parent_path = os.path.realpath(parent_path)
     child_path = os.path.realpath(child_path)
