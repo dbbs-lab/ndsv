@@ -2,13 +2,8 @@ from django.conf import settings
 import pathlib, io, uuid, tarfile, os, shutil
 from django.db.utils import IntegrityError
 from .models import EtchingPlate
+from .exceptions import *
 import copy, json
-
-class PayloadError(Exception):
-    pass
-
-class RaceError(Exception):
-    pass
 
 class RestrictAccess:
     def make_private(self):
@@ -125,9 +120,19 @@ class Artifact:
 
     def as_response(self, file):
         from django.http import FileResponse
-        return FileResponse(open(self.path / file, 'rb'))
 
+        file = self.path / file
+        if not self.is_file(file):
+            raise IOError(f"'{file}' is not an artifact file of {self.beam.id}/{self.id}")
+        return FileResponse(open(file, 'rb'))
 
+    def is_file(self, file):
+        return path_is_parent(self.path, file) and os.path.exists(file)
+
+def path_is_parent(parent_path, child_path):
+    parent_path = os.path.realpath(parent_path)
+    child_path = os.path.realpath(child_path)
+    return parent_path == os.path.commonpath([parent_path, child_path])
 
 def get_static_root():
     path = pathlib.Path(settings.NDSV_STORAGE_VAULT)

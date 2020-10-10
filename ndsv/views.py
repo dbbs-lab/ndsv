@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from oauth2_provider.views.generic import ProtectedResourceView
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, Http404
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -49,4 +49,7 @@ class BeltramiPseudosphereEmitter(View):
             print("User:", request.user, request.user.is_authenticated)
             print(f"Denying artifact read permission for artifact {artifact.id} of beam {artifact.beam.id}")
             raise PermissionDenied()
-        return artifact.as_response(file)
+        try:
+            return artifact.as_response(file)
+        except IOError:
+            raise Http404("Artifact file does not exist") from None
