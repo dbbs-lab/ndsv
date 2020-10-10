@@ -39,7 +39,7 @@ class BeltramiPseudosphereEmitter(View):
     """
         Artifact download endpoint
     """
-    def get(self, request, beam_id, artifact_id, file, *args, **kwargs):
+    def get(self, request, beam_id, artifact_id, file="artifact.json", *args, **kwargs):
         plate = ndsv.models.get_etching_plate(beam_id)
         if not plate or not plate.has_access(request.user):
             print(f"Plate access denied read permission to beam")

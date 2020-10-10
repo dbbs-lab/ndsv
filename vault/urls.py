@@ -26,6 +26,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('beam/receive/', RedshiftQuasarGalaxyBeamRecepticle.as_view()),
     path(r'beam/emit/<slug:beam_id>/', QuantumSuperfluidityThermostat.as_view()),
+    path(r'beam/emit/<slug:beam_id>/<int:artifact_id>/', BeltramiPseudosphereEmitter.as_view()),
     path(r'beam/emit/<slug:beam_id>/<int:artifact_id>/<path:file>/', BeltramiPseudosphereEmitter.as_view()),
     path("", zork, name="index"),
 ]
