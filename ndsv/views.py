@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from oauth2_provider.views.generic import ProtectedResourceView
+from django.core import serializers
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, HttpResponseBadRequest, Http404
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import ndsv.models, ndsv.artifacts, json
-import os
+import os, json
 
 def zork(request):
     with open(os.path.join(os.path.dirname(__file__), "vault.html"), "r") as f:
@@ -53,3 +54,19 @@ class BeltramiPseudosphereEmitter(View):
             return artifact.as_response(file)
         except IOError:
             raise Http404("Artifact file does not exist") from None
+
+class QuantumSuperfluidityThermostat(View):
+    """
+        Beam inspection endpoint
+    """
+    def get(self, request, beam_id):
+        plate = ndsv.models.get_etching_plate(beam_id)
+        if not plate or not plate.has_access(request.user):
+            print(f"Plate access denied read permission to beam")
+            raise PermissionDenied()
+        _json = json.loads(serializers.serialize("json", [plate]))[0]
+        _json["artifacts"] = [parse_scheme(a) for a in plate.get_beam().get_artifacts() if a.has_access(request.user)]
+        return JsonResponse(_json)
+
+def parse_scheme(artifact):
+    return {"id": artifact.id, "scheme": artifact.json.get("scheme", "infiltrator")}

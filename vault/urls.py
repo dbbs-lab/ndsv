@@ -17,13 +17,15 @@ from django.contrib import admin
 from django.urls import path, include
 from ndsv.views import RedshiftQuasarGalaxyBeamRecepticle
 from ndsv.views import BeltramiPseudosphereEmitter
+from ndsv.views import QuantumSuperfluidityThermostat
 from ndsv.views import zork
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("o/", include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('beam/receive', RedshiftQuasarGalaxyBeamRecepticle.as_view()),
+    path('beam/receive/', RedshiftQuasarGalaxyBeamRecepticle.as_view()),
+    path(r'beam/emit/<slug:beam_id>/', QuantumSuperfluidityThermostat.as_view()),
     path(r'beam/emit/<slug:beam_id>/<int:artifact_id>/<path:file>/', BeltramiPseudosphereEmitter.as_view()),
     path("", zork, name="index"),
 ]
