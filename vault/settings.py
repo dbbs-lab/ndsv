@@ -129,5 +129,5 @@ NDSV_STORAGE_VAULT = os.getenv("NDSV_STORAGE_VAULT", "/var/www/ndsv")
 CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = 'ndsv.ApiUser'
 
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = os.getenv('DJANGO_STATIC_ROOT', None)
 STATIC_URL = '/static/'
