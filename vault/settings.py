@@ -124,13 +124,10 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
-STATIC_URL = '/static/'
-
-NDSV_STORAGE_VAULT = '/var/www/ndsv/'
+NDSV_STORAGE_VAULT = os.getenv("NDSV_STORAGE_VAULT", "/var/www/ndsv")
 
 CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = 'ndsv.ApiUser'
+
+STATIC_ROOT = os.getenv('DJANGO_STATIC_ROOT', None)
+STATIC_URL = '/static/'
